@@ -20,17 +20,58 @@
 					dom 	 = Array.prototype.slice.call(el),
 					length   = dom.length;
 				for(var i = 0; i < length; i++){
-					this.[i] = dom[i];
+					this[i] = dom[i];
 				}
 				this.length  = length;
 
 			}
 			return this;
+		},
+		/* 属性 */
+		html : function(ctx){
+			if(!ctx){
+				return this[0].innerHTML;
+			} else {
+				var l = this.length;
+				for(var i = 0; i < len; i++){
+					this[i].innerHTML = ctx;
+				}
+				return this;
+			}
+		},
+		text : function(ctx){
+			if(!ctx){
+				return this[0].textContent;
+			} else {
+				var l = this.length;
+				for(var i = 0; i < l; i++){
+					this[i].innerText = ctx;
+				}
+				return this;
+			}
+		},
+		val : function(ctx){
+			if(!ctx){
+				return this[0].value;
+			} else {
+				var l = this.length;
+				for(var i = 0;i < l; i++){
+					this[i].value = ctx;
+				}
+				return this;
+			}
+		},
+		attr : function(k, v){
+			var l = arguments.length;
+			if(){
+				
+			}
 		}
+
 	}
 	mjq.prototype.init.prototype = mjq.prototype;
 
-
+	window.mjq = window.$ = mjq;
 })(window, document)
 
 
