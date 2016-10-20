@@ -109,7 +109,40 @@
 			return this;
 		},
 		// dom 操作
-
+		prepend: function(str) {
+		    var len = this.length;
+		          for (var i = 0; i < len; i++) {
+		        this[i].insertAdjacentHTML('afterbegin', str);
+		    }
+		    return this;
+		},
+		append: function (str) {
+		    var len = this.length;
+		    for (var i = 0; i < len; i++) {
+		        this[i].insertAdjacentHTML('beforeend', str);
+		    }
+		    return this;
+		},
+		before: function (str) {
+		    var len = this.length;
+		    for (var i = 0; i < len; i++) {
+		        this[i].insertAdjacentHTML('beforebegin', str);
+		    }
+		    return this;
+		},
+		after: function (str) {
+		    var len = this.length;
+		    for (var i = 0; i < len; i++) {
+		        this[i].insertAdjacentHTML('afterend', str);
+		    }
+		    return this;
+		},
+		remove: function () {
+		    var len = this.length;
+		    for (var i = 0; i < len; i++) {
+		        this[i].parentNode.removeChild(this[i]);
+		    }
+    	}
 	}
 	mjq.prototype.init.prototype = mjq.prototype;
 
