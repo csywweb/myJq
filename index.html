@@ -5,15 +5,23 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <title>Examples</title>
 <script type="text/javascript" src="mjq.js"></script>
+<style type="text/css">
+	.aa{
+		color:red;
+	}
+</style>
 </head>
 <body>
-    <div>我是一个div</div>
-    <input name="name" value="123">
+    <div class="aa">我是一个div</div>
+    <input name="name" value="">
+    <input name="name" value="">
+    <input name="name" value="adasdadsa">
 <script type="text/javascript">
 	console.log($("div"))
 	console.log($("div").html())
 	console.log($("div").text())
-	console.log($("input").attr("val","123"))
+	console.log($("input").attr("value","123"))
+	$("div").removeClass("aa");
 </script>
 </body>
 </html>

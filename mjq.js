@@ -62,11 +62,53 @@
 			}
 		},
 		attr : function(k, v){
+			
 			var l = arguments.length;
-			if(){
-				
+			if(l == 1){
+				return this[i].getAttribute(k);
 			}
-		}
+			if(l == 2){
+				var length = this.length;
+				for(var i = 0; i < length; i++){
+					this[i].setAttribute(k, v);
+				}
+				return this;
+			}
+		},
+		removeAttr : function(v){
+			this[0].removeAttribute(v);
+		},
+		addClass : function(str){
+			var length = this.length;
+			var classStr = str.split(" ");
+			for(var i = 0; i < length; i++){
+				for(var j = 0; j < classStr.length; j++){
+					if(this[i].classList){
+						this[i].classList.add(classStr[j]);
+					} else {
+						this[i].className += ' ' + className;
+					}
+				}
+			}
+			return this;
+		},
+		removeClass : function(str){
+			var length = this.length;
+			var classStr = str.split(" ");
+			for(var i = 0; i < length; i++){
+				for(var j = 0; j < classStr.length; j++){
+					if(this[i].classList){
+						this[i].classList.remove(classStr[j]);
+					} else {
+						console.log(this[i].className)
+						//this[i].className = this[i].className.replace(new RegExp('(^|\\b)' + this[i].className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+						this[i].className = this[i].className.replace('aa', ' ')
+					}
+				}
+			}
+			return this;
+		},
+		// dom 操作
 
 	}
 	mjq.prototype.init.prototype = mjq.prototype;
