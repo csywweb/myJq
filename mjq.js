@@ -8,7 +8,7 @@
 	var mjq = function(selector, context){
 		return new mjq.prototype.init(selector, context);
 	}
-	mjq.prototype = {
+	mjq.fn = mjq.prototype = {
 		// 初始化选择器
 		init : function(selector, context){
 			if(!selector){
@@ -27,6 +27,8 @@
 			}
 			return this;
 		},
+		/* 通用方法 */
+
 		/* 属性 */
 		html : function(ctx){
 			if(!ctx){
@@ -110,41 +112,44 @@
 		},
 		// dom 操作
 		prepend: function(str) {
-		    var len = this.length;
-		          for (var i = 0; i < len; i++) {
+		    var l = this.length;
+		          for (var i = 0; i < l; i++) {
 		        this[i].insertAdjacentHTML('afterbegin', str);
 		    }
 		    return this;
 		},
 		append: function (str) {
-		    var len = this.length;
-		    for (var i = 0; i < len; i++) {
+		    var l = this.length;
+		    for (var i = 0; i < l; i++) {
 		        this[i].insertAdjacentHTML('beforeend', str);
 		    }
 		    return this;
 		},
 		before: function (str) {
-		    var len = this.length;
-		    for (var i = 0; i < len; i++) {
+		    var l = this.length;
+		    for (var i = 0; i < l; i++) {
 		        this[i].insertAdjacentHTML('beforebegin', str);
 		    }
 		    return this;
 		},
 		after: function (str) {
-		    var len = this.length;
-		    for (var i = 0; i < len; i++) {
+		    var l = this.length;
+		    for (var i = 0; i < l; i++) {
 		        this[i].insertAdjacentHTML('afterend', str);
 		    }
 		    return this;
 		},
 		remove: function () {
-		    var len = this.length;
-		    for (var i = 0; i < len; i++) {
+		    var l = this.length;
+		    for (var i = 0; i < l; i++) {
 		        this[i].parentNode.removeChild(this[i]);
 		    }
     	}
 	}
-	mjq.prototype.init.prototype = mjq.prototype;
+	mjq.each = function(){
+		console.log("全局each")
+	}
+	mjq.fn.init.prototype = mjq.fn;
 
 	window.mjq = window.$ = mjq;
 })(window, document)
