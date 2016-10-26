@@ -146,8 +146,36 @@
 		    }
     	}
 	}
-	mjq.each = function(){
-		console.log("全局each")
+	mjq.isArray = function(obj){
+		return Array.isArray(obj);
+	}
+	/*
+	 *  @param {list}  				遍历的对象， 参数为数组或者对象
+	 *  @param {callback(k, v)} 	以当前下标的list为上下文执行函数。函数参数k为当前元素下标，对象则为属性名称。v为对应数组元素的值或者对应的属性名称
+	 */
+	mjq.each = function(list, callback){
+		var len = list.length,
+		i = 0,
+		cus = list.custructor;
+		//判断是否为 mjq对象
+		if(cus === window.mjq){
+			for(;i < len; i++){
+				var val = callback.call(list[i], i, list[i]);
+				val === false && break;
+			}
+		} else if (mjq.isArray(list)){
+			for(;i < len; i++){
+				var val = callback.call(list[i], i, list[i]);
+				val === false && break;
+			}
+		} else {
+			for(i in list){
+				var val = callback.call(list[i], i, list[i]);
+				val === false && break;
+			}
+
+		}
+
 	}
 	mjq.fn.init.prototype = mjq.fn;
 
