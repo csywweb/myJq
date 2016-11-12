@@ -1,34 +1,179 @@
-/**
+/*
  * 
  * @authors csy (xjcjcsy@sina.cn)
  * @date    2016-10-18 09:55:24
  * @version 1.0
  */
 ;(function(window, document, undefined){
+	var fragmentRE = /^\s*<(\w+|!)[^>]*>/,
+    	singleTagRE = /^<(\w+)\s*\/?>(?:<\/\1>|)$/,
+    	tagExpanderRE = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/ig,
+    	table = document.createElement('table'),
+	    tableRow = document.createElement('tr'),
+	    class2type = {},
+	    methodAttributes = ['val', 'css', 'html', 'text', 'data', 'width', 'height', 'offset'],
+	    containers = {
+	      'tr': document.createElement('tbody'),
+	      'tbody': table, 'thead': table, 'tfoot': table,
+	      'td': tableRow, 'th': tableRow,
+	      '*': document.createElement('div')
+	    },
+	    isArray = Array.isArray || function(object){ return object instanceof Array }
+    
+    /* 判断类型，取自于zepto的源码， */
+    function type(obj) {
+	    return obj == null ? String(obj) :
+	      class2type[toString.call(obj)] || "object"
+	}
+	function isFunction(value) { return type(value) == "function" }
+	function isWindow(obj)     { return obj != null && obj == obj.window }     // window = window.window
+	function isDocument(obj)   { return obj != null && obj.nodeType == obj.DOCUMENT_NODE }
+	function isObject(obj)     { return type(obj) == "object" }
+	function isPlainObject(obj) {
+		return isObject(obj) && !isWindow(obj) && Object.getPrototypeOf(obj) == Object.prototype
+	}
+
 	var mjq = function(selector, context){
 		return new mjq.prototype.init(selector, context);
 	}
+
+	/* 从给定的字符串生成对应的dom元素 */
+	/*  
+	 * parms {html}			string 	选择器，
+	 *       {name}         string	匹配到的标签名
+	 *       {properties}   object	生成新dom节点的属性值
+	 */
+	function fragment(html, name, properties){
+		var dom, nodes, container;
+
+		//如果是一个单独的标签，类似于<div></div>，或者<div>,<input />
+		if(singleTagRE.test(html)){
+			var dom = $(document.createElement(RegExp.$1));
+		}
+
+		//只有开始标签没有结束标签
+		if(!dom){
+			/* 给<div /> 匹配成<div> </div> */
+			if(html.replace){
+				html = html.replace(tagExpanderRE, '<$1></$2>');
+			}
+			if(name === undefined){
+				name = fragmentRE.test(html) && RegExp.$1;
+			}
+			if(!(name in containers))｛
+				name = "*";
+			｝
+
+			/* 得到指定元素 */
+			container = containers[name];  
+			container.innerHTML = html;
+			dom = mjq.each(Array.prototype.slice.call(container.childNodes), function(){
+				container.removeChild(this);
+			})
+		}
+
+		//如果有第三个参数，新建元素的属性值
+		if (isPlainObject(properties)) {
+			nodes = mjq(dom)
+			mjq.each(properties, function(key, value) {
+				/* 如果是标签属性 */
+				if (methodAttributes.indexOf(key) > -1) ｛
+					nodes[key](value)
+				｝else ｛
+					nodes.attr(key, value)
+				｝
+			})
+	    }
+    	return dom
+	}
+
+	/* 实现选择器功能 */
+	function qsa(ele, selector){
+		var found,
+			maybeID	= selector[0] == '#',
+			maybeClass = selector[0] == '.' && !maybeID,
+			nameOnly = maybeID || maybeClass ? selector.slice(1) : selector,  //只有一个标签选择器
+			isSimple = simpleSelectorRE.test(nameOnly);
+
+			if(element.getElementById && isSimple && maybeID){
+				if(found = element.getElementById(nameOnly)){
+					return [found];
+				} else {
+					return [];
+				}
+			} else {
+				if(element.nodeType !== 1 && element.nodeType !== 9 && element.nodeType !== 11){
+					return [];
+				} else {
+					if(sSimple && !maybeID && element.getElementsByClassName){
+						if(maybeClass){
+							return Array.prototype.slice.call(element.getElementsByClassName(nameOnly));
+						} else {
+							return Array.prototype.slice.call(element.getElementsByTagName(selector));
+						}
+					} else {
+						return Array.prototype.slice.call(element.querySelectorAll(selector));
+					}
+				}
+			}
+	}
 	mjq.fn = mjq.prototype = {
 		// 初始化选择器
+		/* 重写选择器，学习了zepto的selector部分。 */
 		init : function(selector, context){
+			var dom;
 			if(!selector){
 				return this;
-			} else {
-				var selector = selector.trim(),
-					context  = context || document,
-					el 		 = context.querySelectorAll(selector),
-					dom 	 = Array.prototype.slice.call(el),
-					length   = dom.length;
-				for(var i = 0; i < length; i++){
-					this[i] = dom[i];
+			} else if(typeof selector == 'string'){
+				/* 是否为一个html片段 */
+				/* 不太明白这里为什么有一个和下面一样的判断，源码注释没理解 
+					源码注释：
+					Note: In both Chrome 21 and Firefox 15, DOM error 12
+      				is thrown if the fragment doesn't begin with <
+      			*/
+				if(selector[0] == '<' && fragmentRE.test(selector)){
+					dom = fragment(selector, RegExp.$1, context);
+					selector = null;
+				} else if (context != undefined){
+					return mjq(context).find(selector);
+				} else {
+					dom = qsa(document, selector);
+				} else if(isFunction(selector)){
+					return mjq(document).ready(selector);
+				} else {
+					if(isArray(selector)){
+						dom = Array.prototype.filter.call(selector, function(item){
+							return item != null;
+						})
+					} else if(isObject(selector)){
+						dom = [selector], selector = null;
+					} else if(fragmentRE.test(selector)){
+						dom = fragment(selector, RegExp.$1, context);
+						selector = null;
+					} else if (context !== undefined) {
+						return $(context).find(selector)
+					} else {
+						dom = qsa(document, selector)
+					}
 				}
-				this.length  = length;
-
+				var len = dom ? dom.length : 0
+			    for (var i = 0; i < len; i++) {
+			    	this[i] = dom[i]
+			    }
+			    this.length = len;
+			    this.selector = selector || '';
+				
+					
 			}
 			return this;
 		},
-		/* 通用方法 */
-
+		/*  通用方法 */
+		each : function(callback){
+	    	Array.prototype.every.call(this, function(el, index){
+	    		return callback.call(el, index, el) != false;
+	    	})
+	    	return this;
+		},
 		/* 属性 */
 		html : function(ctx){
 			if(!ctx){
@@ -111,6 +256,12 @@
 			return this;
 		},
 		// dom 操作
+		find : function(selector){
+			if(!selector) return;
+			var tag = this[0].querySelectorAll(selector);
+			//this[0].querySelectorAll(selector)
+			return mjq(tag);
+		},
 		prepend: function(str) {
 		    var l = this.length;
 		          for (var i = 0; i < l; i++) {
@@ -144,8 +295,18 @@
 		    for (var i = 0; i < l; i++) {
 		        this[i].parentNode.removeChild(this[i]);
 		    }
-    	}
+    	},
+    	empty : function(){
+    		this.each(function(k, v){
+    			v[k].innerHTML = "";
+    		})
+    	},
+    	size: function(){
+    		return this.length;
+    	},
+
 	}
+	/* 核心方法 */
 	mjq.isArray = function(obj){
 		return Array.isArray(obj);
 	}
@@ -161,26 +322,31 @@
 		if(cus === window.mjq){
 			for(;i < len; i++){
 				var val = callback.call(list[i], i, list[i]);
-				val === false && break;
+				if(val === false ) break;
 			}
 		} else if (mjq.isArray(list)){
 			for(;i < len; i++){
 				var val = callback.call(list[i], i, list[i]);
-				val === false && break;
+				if(val === false ) break;
 			}
 		} else {
 			for(i in list){
 				var val = callback.call(list[i], i, list[i]);
-				val === false && break;
+				if(val === false ) break;
 			}
 
 		}
-
+		return list;
 	}
-	mjq.fn.init.prototype = mjq.fn;
+	/* 填充class2type 这个方法用来判断类型，借鉴与zepto，涨姿势 */
+	mjq.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+	    class2type[ "[object " + name + "]" ] = name.toLowerCase()
+	})
+
+	mjq.fn.init.prototype = mjq.prototype;
 
 	window.mjq = window.$ = mjq;
-})(window, document)
+})(window, document, undefined)
 
 
 
